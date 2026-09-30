@@ -49,6 +49,12 @@ EDUCATION_PRESETS: Dict[str, Dict[str, Any]] = {
         "colors": ["#3A7BD5", "#3A6073", "#00D2FF", "#111827"],
         "tags": ["DATA SCIENCE", "BIG DATA", "ANALYTICS"],
         "base_prompt": "Futuristic floating 3D holographic data visualization dashboards, radiant charts, and glowing statistical nodes in clean dark space"
+    },
+    "robotics": {
+        "metaphor": "Bionic robotic hand assembling glowing cybernetic microchips with laser precision",
+        "colors": ["#00FFFF", "#3B82F6", "#1E293B", "#F1F5F9"],
+        "tags": ["ROBOTICS", "CYBERNETICS", "AUTOMATION"],
+        "base_prompt": "Futuristic precision bionic robotic arm manipulating luminescent glowing nanotechnology circuits in clean room lab"
     }
 }
 
@@ -61,12 +67,23 @@ STYLE_PROMPT_MODIFIERS: Dict[str, str] = {
     "Watercolor Illustration": "soft organic watercolor painting, fluid dreamy color washes, delicate ink outlines, artisanal educational illustration style"
 }
 
+AUDIENCE_MODIFIERS: Dict[str, str] = {
+    "Beginner": "approachable, clean, intuitive visual layout, friendly vibrant tones",
+    "Undergraduate": "rich conceptual detail, structured educational depth, academic clarity",
+    "Advanced": "intricate multi-layered architectural complexity, hyper-detailed high-tech aesthetic",
+    "Executive": "sophisticated executive polish, premium dark-mode finish, elegant minimalist framing"
+}
 
-def build_style_prompts(base_prompt: str) -> Dict[str, str]:
-    """Generates customized prompts for each artistic style variation."""
+
+def build_style_prompts(base_prompt: str, audience: str = "General") -> Dict[str, str]:
+    """Generates customized prompts for each artistic style variation taking audience into account."""
+    aud_suffix = AUDIENCE_MODIFIERS.get(audience, "")
     results = {}
     for style_name, modifier in STYLE_PROMPT_MODIFIERS.items():
-        results[style_name] = f"{base_prompt}, {modifier}"
+        if aud_suffix:
+            results[style_name] = f"{base_prompt}, {modifier}, {aud_suffix}"
+        else:
+            results[style_name] = f"{base_prompt}, {modifier}"
     return results
 
 
@@ -82,20 +99,19 @@ def extract_concept_heuristics(title: str, text: str, audience: str = "General")
             break
             
     if not matched_preset:
-        # Default dynamic synthesis
         words = [w for w in title.split() if len(w) > 3]
         topic_term = words[0] if words else "Educational Mastery"
         base_prompt = f"Futuristic educational concept illustration of {title}, symbolizing deep knowledge and {topic_term}, glowing dynamic lighting, inspirational academic atmosphere"
         metaphor = f"Dynamic visual representation of {title} with interconnected conceptual nodes and enlightened scholarly geometry"
         colors = ["#1E3A8A", "#3B82F6", "#60A5FA", "#0F172A"]
-        tags = ["EDUCATION", "MASTERY", title[:15].upper()]
+        tags = ["EDUCATION", "MASTERY", title[:15].upper().strip()]
     else:
         metaphor = matched_preset["metaphor"]
         colors = matched_preset["colors"]
         tags = matched_preset["tags"]
         base_prompt = f"{matched_preset['base_prompt']} for learning '{title}'"
 
-    prompts = build_style_prompts(base_prompt)
+    prompts = build_style_prompts(base_prompt, audience)
 
     return ExtractedConcept(
         key_topic=title,
@@ -149,7 +165,7 @@ def extract_concept_with_llm(title: str, text: str, audience: str = "General") -
         data = json.loads(raw_json)
         
         base_prompt = data.get("base_prompt", f"Educational visual for {title}")
-        prompts = build_style_prompts(base_prompt)
+        prompts = build_style_prompts(base_prompt, audience)
         
         return ExtractedConcept(
             key_topic=data.get("key_topic", title),

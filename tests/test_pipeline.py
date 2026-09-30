@@ -4,10 +4,10 @@ import unittest
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from backend.services.prompt_engine import extract_concept_heuristics, build_style_prompts
-from backend.services.cloudinary_service import cloudinary_service, ASPECT_RATIOS
+from backend.services.prompt_engine import extract_concept_heuristics, build_style_prompts, EDUCATION_PRESETS
+from backend.services.cloudinary_service import cloudinary_service, ASPECT_RATIOS, THEME_CONFIGS
 
-class TestEduVisionPipeline(unittest.TestCase):
+class TestEduVisionPhase1(unittest.TestCase):
 
     def test_concept_extraction_heuristics(self):
         title = "Quantum Computing & Entanglement"
@@ -20,15 +20,13 @@ class TestEduVisionPipeline(unittest.TestCase):
         self.assertTrue(len(concept.suggested_prompts) >= 4)
         self.assertIn("3D Render", concept.suggested_prompts)
 
-    def test_style_prompts_builder(self):
+    def test_audience_aware_prompts_builder(self):
         base = "Floating neural network node with holographic crystal light"
-        prompts = build_style_prompts(base)
+        prompts_beginner = build_style_prompts(base, audience="Beginner")
+        prompts_adv = build_style_prompts(base, audience="Advanced")
 
-        self.assertIn("3D Render", prompts)
-        self.assertIn("Photorealistic", prompts)
-        self.assertIn("Minimalist Vector", prompts)
-        self.assertIn("Cyberpunk / Sci-Fi", prompts)
-        self.assertTrue(prompts["3D Render"].startswith(base))
+        self.assertIn("approachable", prompts_beginner["3D Render"])
+        self.assertIn("architectural complexity", prompts_adv["3D Render"])
 
     def test_cloudinary_dynamic_format_url(self):
         formatted = cloudinary_service.build_format_url(
@@ -46,6 +44,29 @@ class TestEduVisionPipeline(unittest.TestCase):
         self.assertIn("res.cloudinary.com", formatted.url)
         self.assertIn("f_auto", formatted.cloudinary_transformations)
         self.assertIn("q_auto", formatted.cloudinary_transformations)
+
+    def test_cloudinary_genai_transformations(self):
+        gen_transforms = cloudinary_service.build_generative_ai_transformations(
+            gen_background_prompt="futuristic neon laboratory",
+            gen_recolor_prompt="circuits",
+            gen_recolor_to="#00F2FE",
+            gen_restore=True
+        )
+        self.assertEqual(len(gen_transforms), 3)
+        self.assertTrue(any("gen_background_replace" in str(t) for t in gen_transforms))
+        self.assertTrue(any("gen_recolor" in str(t) for t in gen_transforms))
+        self.assertTrue(any("gen_restore" in str(t) for t in gen_transforms))
+
+    def test_overlay_themes(self):
+        for theme_name in ["dark_modern", "clean_minimal", "vibrant_gradient"]:
+            self.assertIn(theme_name, THEME_CONFIGS)
+            overlays = cloudinary_service.build_dynamic_overlay_transformations(
+                title="Test Course",
+                instructor_name="Test Instructor",
+                category_tag="TECH",
+                theme=theme_name
+            )
+            self.assertGreater(len(overlays), 3)
 
     def test_aspect_ratios_supported(self):
         expected_ratios = ["16:9", "9:16", "1:1", "4:3"]

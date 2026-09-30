@@ -42,6 +42,30 @@ ASPECT_RATIOS = {
     }
 }
 
+THEME_CONFIGS = {
+    "dark_modern": {
+        "title_color": "#FFFFFF",
+        "tag_color": "#00F2FE",
+        "instructor_color": "#94A3B8",
+        "scrim_effect": "gradient_fade",
+        "brightness": -15
+    },
+    "clean_minimal": {
+        "title_color": "#F8FAFC",
+        "tag_color": "#38BDF8",
+        "instructor_color": "#CBD5E1",
+        "scrim_effect": "gradient_fade",
+        "brightness": -25
+    },
+    "vibrant_gradient": {
+        "title_color": "#FFFBEB",
+        "tag_color": "#F43F5E",
+        "instructor_color": "#FDE047",
+        "scrim_effect": "gradient_fade",
+        "brightness": -10
+    }
+}
+
 class CloudinaryService:
     def __init__(self):
         self.is_configured = settings.is_cloudinary_configured
@@ -90,10 +114,6 @@ class CloudinaryService:
 
         if self.is_configured:
             try:
-                # Direct upload with tags and contextual prompt metadata
-                # Utilizing Cloudinary AI image generation / placeholders with generative effects
-                # We can also upload an initial generative base template or use Cloudinary's dynamic AI gen asset URL
-                # For demo reliability and speed, upload a curated aesthetic educational background with GenAI transformations
                 sample_sources = {
                     "3D Render": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1280&q=80",
                     "Photorealistic": "https://images.unsplash.com/photo-1507413245164-6160d8298b31?auto=format&fit=crop&w=1280&q=80",
@@ -117,13 +137,11 @@ class CloudinaryService:
                 }
             except Exception as e:
                 logger.error(f"Cloudinary upload error: {e}")
-                # Fallback to demo public_id
                 return {
                     "public_id": "sample",
-                    "url": f"https://res.cloudinary.com/demo/image/upload/sample.jpg"
+                    "url": "https://res.cloudinary.com/demo/image/upload/sample.jpg"
                 }
         else:
-            # Fallback demo asset
             demo_assets = {
                 "3D Render": "cld-sample-4",
                 "Photorealistic": "cld-sample-2",
@@ -138,6 +156,34 @@ class CloudinaryService:
                 "url": f"https://res.cloudinary.com/demo/image/upload/{demo_id}.jpg"
             }
 
+    def build_generative_ai_transformations(
+        self,
+        gen_background_prompt: Optional[str] = None,
+        gen_recolor_prompt: Optional[str] = None,
+        gen_recolor_to: Optional[str] = None,
+        gen_restore: bool = False
+    ) -> List[Dict[str, Any]]:
+        """
+        Builds Cloudinary GenAI Transformation layers:
+        - e_gen_background_replace: prompt-based generative background swapping
+        - e_gen_recolor: generative item recoloring
+        - e_gen_restore: AI image clarity and restoration
+        """
+        transforms = []
+        if gen_background_prompt:
+            transforms.append({
+                "effect": f"gen_background_replace:prompt_{urllib.parse.quote(gen_background_prompt)}"
+            })
+        if gen_recolor_prompt and gen_recolor_to:
+            transforms.append({
+                "effect": f"gen_recolor:prompt_{urllib.parse.quote(gen_recolor_prompt)};to-color_{gen_recolor_to.replace('#', '')}"
+            })
+        if gen_restore:
+            transforms.append({
+                "effect": "gen_restore"
+            })
+        return transforms
+
     def build_dynamic_overlay_transformations(
         self,
         title: str,
@@ -148,6 +194,7 @@ class CloudinaryService:
         """
         Builds sophisticated Cloudinary dynamic overlay transformations for typography and branding.
         """
+        theme_cfg = THEME_CONFIGS.get(theme, THEME_CONFIGS["dark_modern"])
         safe_title = urllib.parse.quote(title[:45].replace("/", " "))
         safe_instructor = urllib.parse.quote(f"INSTRUCTOR: {instructor_name}".upper()) if instructor_name else None
         safe_tag = urllib.parse.quote(category_tag.upper()) if category_tag else None
@@ -155,16 +202,14 @@ class CloudinaryService:
         transformations = []
 
         # 1. Base gradient scrim overlay for high text legibility
-        if theme == "dark_modern":
-            # Dark gradient at the bottom
-            transformations.append({
-                "overlay": {"font_family": "Arial", "font_size": 1, "text": " "},
-                "effect": "gradient_fade",
-                "flags": "layer_apply"
-            })
-            transformations.append({
-                "effect": "brightness:-15"
-            })
+        transformations.append({
+            "overlay": {"font_family": "Arial", "font_size": 1, "text": " "},
+            "effect": theme_cfg["scrim_effect"],
+            "flags": "layer_apply"
+        })
+        transformations.append({
+            "effect": f"brightness:{theme_cfg['brightness']}"
+        })
 
         # 2. Category / Badge Tag (Top-Left)
         if safe_tag:
@@ -176,7 +221,7 @@ class CloudinaryService:
                     "text": safe_tag,
                     "letter_spacing": 3
                 },
-                "color": "#00F2FE",
+                "color": theme_cfg["tag_color"],
                 "gravity": "north_west",
                 "x": 60,
                 "y": 60
@@ -190,7 +235,7 @@ class CloudinaryService:
                 "font_weight": "bold",
                 "text": safe_title
             },
-            "color": "#FFFFFF",
+            "color": theme_cfg["title_color"],
             "gravity": "south_west",
             "x": 60,
             "y": 140,
@@ -207,7 +252,7 @@ class CloudinaryService:
                     "font_weight": "bold",
                     "text": safe_instructor
                 },
-                "color": "#94A3B8",
+                "color": theme_cfg["instructor_color"],
                 "gravity": "south_west",
                 "x": 60,
                 "y": 80
@@ -222,7 +267,7 @@ class CloudinaryService:
                 "text": "EduVision AI"
             },
             "color": "#F8FAFC",
-            "opacity": 70,
+            "opacity": 75,
             "gravity": "north_east",
             "x": 50,
             "y": 60
@@ -238,11 +283,15 @@ class CloudinaryService:
         instructor_name: Optional[str] = None,
         category_tag: Optional[str] = None,
         include_text_overlay: bool = True,
-        theme: str = "dark_modern"
+        theme: str = "dark_modern",
+        gen_background_prompt: Optional[str] = None,
+        gen_recolor_prompt: Optional[str] = None,
+        gen_recolor_to: Optional[str] = None,
+        gen_restore: bool = False
     ) -> FormattedAsset:
         """
         Constructs an optimized, transformed Cloudinary URL with specified aspect ratio,
-        dynamic text overlay, and f_auto,q_auto delivery.
+        generative AI effects, dynamic text overlay, and f_auto,q_auto delivery.
         """
         spec = ASPECT_RATIOS.get(aspect_ratio, ASPECT_RATIOS["16:9"])
         w, h = spec["width"], spec["height"]
@@ -251,6 +300,16 @@ class CloudinaryService:
         transformation_list = [
             {"width": w, "height": h, "crop": spec["crop"], "gravity": spec["gravity"]}
         ]
+
+        # Generative AI transformations
+        gen_transforms = self.build_generative_ai_transformations(
+            gen_background_prompt=gen_background_prompt,
+            gen_recolor_prompt=gen_recolor_prompt,
+            gen_recolor_to=gen_recolor_to,
+            gen_restore=gen_restore
+        )
+        if gen_transforms:
+            transformation_list.extend(gen_transforms)
 
         # Add text and branding overlays if requested
         if include_text_overlay and title:
@@ -282,7 +341,6 @@ class CloudinaryService:
             logger.warning(f"Error building cloudinary url: {e}")
             url = f"https://res.cloudinary.com/{cloud_name}/image/upload/c_{spec['crop']},g_{spec['gravity']},w_{w},h_{h},f_auto,q_auto/{public_id}.jpg"
 
-        # Human-readable transformation string
         trans_str = f"c_{spec['crop']},g_{spec['gravity']},w_{w},h_{h},f_auto,q_auto"
         if include_text_overlay and title:
             trans_str += f",l_text:Montserrat_52_bold:{urllib.parse.quote(title[:25])}"
@@ -304,7 +362,9 @@ class CloudinaryService:
         style_prompts: Dict[str, str],
         aspect_ratios: List[str] = None,
         include_text_overlay: bool = True,
-        theme: str = "dark_modern"
+        theme: str = "dark_modern",
+        gen_background_prompt: Optional[str] = None,
+        gen_restore: bool = False
     ) -> List[StyleVariant]:
         """
         Orchestrates full Track 2 Generative Content Workflow:
@@ -330,7 +390,9 @@ class CloudinaryService:
                     instructor_name=instructor_name,
                     category_tag=category_tag,
                     include_text_overlay=include_text_overlay,
-                    theme=theme
+                    theme=theme,
+                    gen_background_prompt=gen_background_prompt,
+                    gen_restore=gen_restore
                 )
                 formats_dict[ar] = formatted_asset
 
