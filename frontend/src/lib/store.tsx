@@ -103,8 +103,11 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     checkHealth().then((res) => {
-      setIsCloudinaryConnected(res.cloudinary_configured);
+      setIsCloudinaryConnected(!!res.cloudinary_configured);
       setCloudName(res.cloud_name || "demo");
+    }).catch(() => {
+      setIsCloudinaryConnected(false);
+      setCloudName("demo");
     });
   }, []);
 
@@ -134,11 +137,11 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     setGenerationStep(1);
     setGenerationStatusText("Finding visual relationships and core motifs...");
     
-    await new Promise((r) => setTimeout(r, 600));
+    await new Promise((r) => setTimeout(r, 400));
     setGenerationStep(2);
     setGenerationStatusText("Synthesizing structured visual prompts...");
 
-    await new Promise((r) => setTimeout(r, 600));
+    await new Promise((r) => setTimeout(r, 400));
     setGenerationStep(3);
     setGenerationStatusText("Sending generation request to Cloudinary GenAI pipeline...");
 
@@ -155,16 +158,15 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
       setGenerationStep(4);
       setGenerationStatusText("Rendering stylistic variations & smart gravity crops...");
-      await new Promise((r) => setTimeout(r, 600));
+      await new Promise((r) => setTimeout(r, 400));
 
       setGenerationStep(5);
       setGenerationStatusText("Applying dynamic typography overlays & f_auto, q_auto delivery...");
-      await new Promise((r) => setTimeout(r, 500));
+      await new Promise((r) => setTimeout(r, 300));
 
       setVariants(res.variants);
       setSelectedStudioAsset(res.variants[0]);
 
-      // Populate Storyboard Scenes
       const scenes: StoryboardScene[] = [
         {
           id: "scene-1",

@@ -40,7 +40,7 @@ export interface AssetBundleResponse {
 export async function checkHealth() {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
     const res = await fetch(`${API_BASE_URL}/api/health`, { 
       cache: 'no-store',
       signal: controller.signal
@@ -49,14 +49,14 @@ export async function checkHealth() {
     if (!res.ok) throw new Error("Health check failed");
     return await res.json();
   } catch (err) {
-    return { status: "offline", cloudinary_configured: false, cloud_name: "demo", gemini_configured: false };
+    return { status: "demo", cloudinary_configured: false, cloud_name: "demo", gemini_configured: false };
   }
 }
 
 export async function fetchSampleLessons() {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
     const res = await fetch(`${API_BASE_URL}/api/sample-lessons`, {
       signal: controller.signal
     });
@@ -105,6 +105,8 @@ export async function fetchSampleLessons() {
 
 export async function extractConcepts(title: string, text: string, audience: string = "Advanced"): Promise<ConceptData> {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
     const res = await fetch(`${API_BASE_URL}/api/extract-concepts`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -112,13 +114,14 @@ export async function extractConcepts(title: string, text: string, audience: str
         lesson_title: title,
         lesson_text: text,
         target_audience: audience
-      })
+      }),
+      signal: controller.signal
     });
+    clearTimeout(timeoutId);
     if (!res.ok) throw new Error("Concept extraction failed");
     const json = await res.json();
     return json.data;
   } catch (err) {
-    // High-fidelity fallback for Demo Mode
     return {
       key_topic: title,
       visual_metaphor: `A luminous scientific visualization representing ${title} with interconnected conceptual nodes and probability fields.`,
@@ -143,6 +146,8 @@ export async function generateAssetBundle(
   theme: string = "dark_modern"
 ): Promise<AssetBundleResponse> {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
     const res = await fetch(`${API_BASE_URL}/api/generate-assets`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -155,12 +160,13 @@ export async function generateAssetBundle(
         aspect_ratios: ["16:9", "4:3", "1:1", "9:16"],
         include_text_overlay: true,
         overlay_theme: theme
-      })
+      }),
+      signal: controller.signal
     });
+    clearTimeout(timeoutId);
     if (!res.ok) throw new Error("Asset generation failed");
     return await res.json();
   } catch (err) {
-    // High-fidelity demo fallback with Cloudinary sample URLs
     const mockStyles = [
       { name: "Scientific 3D", id: "cld-sample-4" },
       { name: "Editorial", id: "cld-sample-5" },
@@ -231,6 +237,8 @@ export async function previewOverlay(
   theme: string = "dark_modern"
 ): Promise<FormattedAsset> {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
     const res = await fetch(`${API_BASE_URL}/api/preview-overlay`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -241,8 +249,10 @@ export async function previewOverlay(
         category_tag: tag,
         aspect_ratio,
         theme
-      })
+      }),
+      signal: controller.signal
     });
+    clearTimeout(timeoutId);
     if (!res.ok) throw new Error("Preview overlay failed");
     return await res.json();
   } catch (err) {
