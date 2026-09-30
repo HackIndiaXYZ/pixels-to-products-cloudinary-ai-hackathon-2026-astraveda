@@ -13,6 +13,14 @@ class TestEduVisionAPIEndpoints(unittest.TestCase):
     def setUpClass(cls):
         cls.client = TestClient(app)
 
+    def test_root_endpoint(self):
+        """Test GET / returns project metadata and status."""
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["project"], "EduVision: Ed-Tech Dynamic Asset Engine")
+        self.assertEqual(data["team"], "ASTRAVEDA")
+
     def test_health_endpoint(self):
         """Test GET /api/health returns valid status and configuration flags."""
         response = self.client.get("/api/health")
@@ -21,6 +29,23 @@ class TestEduVisionAPIEndpoints(unittest.TestCase):
         self.assertEqual(data["status"], "healthy")
         self.assertIn("cloudinary_configured", data)
         self.assertIn("version", data)
+
+    def test_styles_endpoint(self):
+        """Test GET /api/styles returns supported style modifiers."""
+        response = self.client.get("/api/styles")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("styles", data)
+        self.assertIn("3D Render", data["styles"])
+        self.assertIn("Photorealistic", data["styles"])
+
+    def test_themes_endpoint(self):
+        """Test GET /api/themes returns supported dynamic themes."""
+        response = self.client.get("/api/themes")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("themes", data)
+        self.assertIn("dark_modern", data["themes"])
 
     def test_sample_lessons_endpoint(self):
         """Test GET /api/sample-lessons returns curriculum presets."""
@@ -72,7 +97,6 @@ class TestEduVisionAPIEndpoints(unittest.TestCase):
         self.assertEqual(len(data["variants"]), 2)
         self.assertEqual(data["total_assets_generated"], 6)
 
-        # Inspect format properties
         first_variant = data["variants"][0]
         self.assertIn("16:9", first_variant["formats"])
         format_16_9 = first_variant["formats"]["16:9"]
@@ -99,9 +123,56 @@ class TestEduVisionAPIEndpoints(unittest.TestCase):
         self.assertEqual(data["height"], 720)
         self.assertIn("res.cloudinary.com", data["url"])
 
+    def test_gen_transform_endpoint(self):
+        """Test POST /api/gen-transform applies GenAI background replacement & restoration."""
+        payload = {
+            "public_id": "cld-sample-4",
+            "aspect_ratio": "16:9",
+            "gen_background_prompt": "cyberpunk laboratory with glowing blue lasers",
+            "gen_restore": True,
+            "title": "Advanced Cybernetics",
+            "instructor_name": "Prof. Thorne",
+            "theme": "dark_modern"
+        }
+        response = self.client.post("/api/gen-transform", json=payload)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("res.cloudinary.com", data["url"])
+
+    def test_export_bundle_endpoint(self):
+        """Test POST /api/export-bundle builds downloadable export manifest."""
+        payload = {
+            "lesson_title": "Quantum Computing",
+            "variants": [
+                {
+                    "style_name": "3D Render",
+                    "base_public_id": "cld-sample-4",
+                    "base_image_url": "https://res.cloudinary.com/demo/image/upload/sample.jpg",
+                    "generation_prompt": "Quantum core",
+                    "formats": {
+                        "16:9": {
+                            "aspect_ratio": "16:9",
+                            "label": "Thumbnail",
+                            "url": "https://res.cloudinary.com/demo/image/upload/w_1280,h_720,f_auto,q_auto/sample.jpg",
+                            "width": 1280,
+                            "height": 720,
+                            "cloudinary_transformations": "w_1280,h_720,f_auto,q_auto"
+                        }
+                    },
+                    "overlay_applied": True
+                }
+            ]
+        }
+        response = self.client.post("/api/export-bundle", json=payload)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data["success"])
+        self.assertEqual(data["total_files"], 1)
+        self.assertEqual(len(data["manifest"]), 1)
+        self.assertEqual(len(data["download_urls"]), 1)
+
     def test_validation_error_handling(self):
         """Test that invalid payloads return 422 Unprocessable Entity."""
-        # Missing required field 'lesson_title'
         invalid_payload = {
             "lesson_text": "Sample text without title"
         }

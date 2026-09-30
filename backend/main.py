@@ -9,15 +9,19 @@ from backend.models.schemas import (
     GenerateAssetRequest,
     AssetBundleResponse,
     DynamicOverlayRequest,
+    GenTransformRequest,
+    ExportBundleRequest,
+    ExportBundleResponse,
     FormattedAsset,
     HealthResponse
 )
 from backend.services.prompt_engine import (
     extract_concept_with_llm,
     build_style_prompts,
+    STYLE_PROMPT_MODIFIERS,
     EDUCATION_PRESETS
 )
-from backend.services.cloudinary_service import cloudinary_service
+from backend.services.cloudinary_service import cloudinary_service, ASPECT_RATIOS, THEME_CONFIGS
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("eduvision-backend")
@@ -28,7 +32,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Enable CORS for frontend communication
+# Enable CORS for frontend and external integrations
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -36,6 +40,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/")
+def root():
+    """Root info endpoint."""
+    return {
+        "project": "EduVision: Ed-Tech Dynamic Asset Engine",
+        "track": "Track 2 — Generative Content Workflows",
+        "hackathon": "Cloudinary AI Hackathon 2026",
+        "team": "ASTRAVEDA",
+        "status": "operational",
+        "docs": "/docs"
+    }
 
 @app.get("/api/health", response_model=HealthResponse)
 def health_check():
@@ -49,6 +65,22 @@ def health_check():
         version="1.0.0"
     )
 
+@app.get("/api/styles")
+def get_available_styles() -> Dict[str, Any]:
+    """Returns supported generative style modifiers."""
+    return {
+        "styles": list(STYLE_PROMPT_MODIFIERS.keys()),
+        "modifiers": STYLE_PROMPT_MODIFIERS
+    }
+
+@app.get("/api/themes")
+def get_overlay_themes() -> Dict[str, Any]:
+    """Returns supported dynamic typography themes."""
+    return {
+        "themes": list(THEME_CONFIGS.keys()),
+        "configs": THEME_CONFIGS
+    }
+
 @app.get("/api/sample-lessons")
 def get_sample_lessons() -> Dict[str, Any]:
     """Provides curated sample curriculum presets for instant testing and demonstration."""
@@ -59,7 +91,7 @@ def get_sample_lessons() -> Dict[str, Any]:
                 "title": "Quantum Computing & Qubit Entanglement",
                 "instructor": "Dr. Elena Vance",
                 "tag": "PHYSICS & TECH",
-                "audience": "Advanced Undergraduate",
+                "audience": "Advanced",
                 "text": "Introduction to superposition, multi-qubit entanglement, and quantum gates. Exploring particle interference in cryogenic quantum computing circuits."
             },
             {
@@ -67,7 +99,7 @@ def get_sample_lessons() -> Dict[str, Any]:
                 "title": "Deep Neural Architectures & Generative AI",
                 "instructor": "Prof. Marcus Thorne",
                 "tag": "COMPUTER SCIENCE",
-                "audience": "Software Engineers",
+                "audience": "Advanced",
                 "text": "Comprehensive deep dive into transformer models, multi-head attention, latent diffusion representations, and foundational model fine-tuning."
             },
             {
@@ -75,7 +107,7 @@ def get_sample_lessons() -> Dict[str, Any]:
                 "title": "Astrobiology & Exoplanetary Atmospheres",
                 "instructor": "Dr. Sarah Lin",
                 "tag": "SPACE SCIENCES",
-                "audience": "Curious Learners",
+                "audience": "Undergraduate",
                 "text": "Detecting biosignatures on habitable zone exoplanets using James Webb spectroscopy. Planetary geological cycles and extremophile lifeforms."
             },
             {
@@ -83,7 +115,7 @@ def get_sample_lessons() -> Dict[str, Any]:
                 "title": "Lost Civilizations & Ancient Alexandria",
                 "instructor": "Prof. Arthur Pendelton",
                 "tag": "HUMANITIES & HISTORY",
-                "audience": "High School / College",
+                "audience": "Beginner",
                 "text": "Exploring the intellectual epicenter of the Hellenistic world, the Great Library of Alexandria, Archimedean mechanics, and ancient parchment scrolls."
             },
             {
@@ -91,7 +123,7 @@ def get_sample_lessons() -> Dict[str, Any]:
                 "title": "Decentralized Systems & Cryptography",
                 "instructor": "Alex Rivera",
                 "tag": "BLOCKCHAIN TECH",
-                "audience": "Developers",
+                "audience": "Executive",
                 "text": "Zero-knowledge proofs, consensus mechanisms, Byzantine fault tolerance, and smart contract architecture in decentralized state machines."
             }
         ]
@@ -128,15 +160,14 @@ def generate_assets(payload: GenerateAssetRequest):
     4. Applies f_auto and q_auto optimization parameters.
     """
     try:
-        # Build style prompts based on input or selected styles
         style_prompts = {}
         for style in payload.styles:
-            style_prompts[style] = f"{payload.prompt} in {style} aesthetic"
+            modifier = STYLE_PROMPT_MODIFIERS.get(style, "high quality")
+            style_prompts[style] = f"{payload.prompt}, {modifier}"
 
-        # Generate asset bundle through Cloudinary pipeline
         variants = cloudinary_service.generate_asset_bundle(
             lesson_title=payload.lesson_title,
-            instructor_name=payload.instructor_name or "EduVision",
+            instructor_name=payload.instructor_name or "EduVision AI",
             category_tag=payload.category_tag or "ACADEMICS",
             style_prompts=style_prompts,
             aspect_ratios=payload.aspect_ratios,
@@ -149,7 +180,7 @@ def generate_assets(payload: GenerateAssetRequest):
         return AssetBundleResponse(
             success=True,
             lesson_title=payload.lesson_title,
-            instructor_name=payload.instructor_name or "EduVision",
+            instructor_name=payload.instructor_name or "EduVision AI",
             category_tag=payload.category_tag or "ACADEMICS",
             variants=variants,
             total_assets_generated=total_assets,
@@ -178,6 +209,64 @@ def preview_overlay(payload: DynamicOverlayRequest):
         return formatted
     except Exception as e:
         logger.error(f"Error previewing overlay: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/gen-transform", response_model=FormattedAsset)
+def gen_transform(payload: GenTransformRequest):
+    """
+    Applies Cloudinary GenAI transformations (Background Replace, Object Recolor, Restore)
+    on-the-fly to a specified asset.
+    """
+    try:
+        formatted = cloudinary_service.build_format_url(
+            public_id=payload.public_id,
+            aspect_ratio=payload.aspect_ratio,
+            title=payload.title,
+            instructor_name=payload.instructor_name,
+            category_tag=payload.category_tag,
+            include_text_overlay=bool(payload.title),
+            theme=payload.theme,
+            gen_background_prompt=payload.gen_background_prompt,
+            gen_recolor_prompt=payload.gen_recolor_prompt,
+            gen_recolor_to=payload.gen_recolor_to,
+            gen_restore=payload.gen_restore
+        )
+        return formatted
+    except Exception as e:
+        logger.error(f"Error applying gen transform: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/export-bundle", response_model=ExportBundleResponse)
+def export_bundle(payload: ExportBundleRequest):
+    """
+    Prepares a complete export manifest for downloading and distributing generated assets.
+    """
+    try:
+        manifest = []
+        urls = []
+        for variant in payload.variants:
+            for ar, format_asset in variant.formats.items():
+                entry = {
+                    "style": variant.style_name,
+                    "aspect_ratio": ar,
+                    "label": format_asset.label,
+                    "width": format_asset.width,
+                    "height": format_asset.height,
+                    "url": format_asset.url,
+                    "transformations": format_asset.cloudinary_transformations
+                }
+                manifest.append(entry)
+                urls.append(format_asset.url)
+
+        return ExportBundleResponse(
+            success=True,
+            lesson_title=payload.lesson_title,
+            total_files=len(manifest),
+            manifest=manifest,
+            download_urls=urls
+        )
+    except Exception as e:
+        logger.error(f"Error exporting bundle: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ from typing import List, Optional, Dict, Any
 class ConceptExtractionRequest(BaseModel):
     lesson_title: str = Field(..., description="Title of the course or lesson")
     lesson_text: str = Field(..., description="Raw text, syllabus, or outline of the lesson")
-    target_audience: Optional[str] = Field("General", description="Audience level (e.g. Beginner, Advanced, Kids, University)")
+    target_audience: Optional[str] = Field("General", description="Audience level (e.g. Beginner, Undergraduate, Advanced, Executive)")
 
 class ExtractedConcept(BaseModel):
     key_topic: str
@@ -24,10 +24,10 @@ class GenerateAssetRequest(BaseModel):
     instructor_name: Optional[str] = "EduVision AI"
     category_tag: Optional[str] = "ACADEMICS"
     prompt: str
-    styles: List[str] = Field(default_factory=lambda: ["3D Render", "Photorealistic", "Minimalist Vector"])
+    styles: List[str] = Field(default_factory=lambda: ["3D Render", "Photorealistic", "Minimalist Vector", "Cyberpunk / Sci-Fi"])
     aspect_ratios: List[str] = Field(default_factory=lambda: ["16:9", "9:16", "1:1", "4:3"])
     include_text_overlay: bool = True
-    overlay_theme: Optional[str] = "dark_modern" # dark_modern, vibrant_gradient, clean_minimal
+    overlay_theme: Optional[str] = "dark_modern" # dark_modern, clean_minimal, vibrant_gradient
 
 class FormattedAsset(BaseModel):
     aspect_ratio: str # "16:9", "9:16", "1:1", "4:3"
@@ -62,6 +62,29 @@ class DynamicOverlayRequest(BaseModel):
     category_tag: Optional[str] = None
     aspect_ratio: str = "16:9"
     theme: str = "dark_modern"
+
+class GenTransformRequest(BaseModel):
+    public_id: str
+    aspect_ratio: str = "16:9"
+    gen_background_prompt: Optional[str] = None
+    gen_recolor_prompt: Optional[str] = None
+    gen_recolor_to: Optional[str] = None
+    gen_restore: bool = False
+    title: Optional[str] = None
+    instructor_name: Optional[str] = None
+    category_tag: Optional[str] = None
+    theme: str = "dark_modern"
+
+class ExportBundleRequest(BaseModel):
+    lesson_title: str
+    variants: List[StyleVariant]
+
+class ExportBundleResponse(BaseModel):
+    success: bool
+    lesson_title: str
+    total_files: int
+    manifest: List[Dict[str, Any]]
+    download_urls: List[str]
 
 class HealthResponse(BaseModel):
     status: str

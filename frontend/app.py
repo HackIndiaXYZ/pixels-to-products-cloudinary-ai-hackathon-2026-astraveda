@@ -12,9 +12,10 @@ from backend.config import settings
 from backend.services.prompt_engine import (
     extract_concept_with_llm,
     build_style_prompts,
-    STYLE_PROMPT_MODIFIERS
+    STYLE_PROMPT_MODIFIERS,
+    AUDIENCE_MODIFIERS
 )
-from backend.services.cloudinary_service import cloudinary_service, ASPECT_RATIOS
+from backend.services.cloudinary_service import cloudinary_service, ASPECT_RATIOS, THEME_CONFIGS
 
 # Page configuration
 st.set_page_config(
@@ -37,6 +38,8 @@ if "instructor_name" not in st.session_state:
     st.session_state.instructor_name = "Dr. Elena Vance"
 if "category_tag" not in st.session_state:
     st.session_state.category_tag = "QUANTUM PHYSICS"
+if "audience_level" not in st.session_state:
+    st.session_state.audience_level = "Advanced"
 if "lesson_text" not in st.session_state:
     st.session_state.lesson_text = (
         "An exploration of quantum state vectors, Dirac bra-ket notation, "
@@ -58,7 +61,7 @@ with st.sidebar:
     else:
         st.warning(f"🟡 Demo Mode Active\nCloud Name: `{cld_status.get('cloud_name')}`")
         with st.expander("🔑 Add API Keys"):
-            st.info("Set credentials in `.env` or enter below for live storage:")
+            st.info("Set credentials in `.env` or enter below for live cloud generation:")
             input_cld_name = st.text_input("Cloud Name", value=settings.CLOUDINARY_CLOUD_NAME)
             input_cld_key = st.text_input("API Key", value=settings.CLOUDINARY_API_KEY, type="password")
             input_cld_secret = st.text_input("API Secret", value=settings.CLOUDINARY_API_SECRET, type="password")
@@ -76,25 +79,36 @@ with st.sidebar:
             "title": "Quantum Computing & Superposition",
             "instructor": "Dr. Elena Vance",
             "tag": "QUANTUM PHYSICS",
+            "audience": "Advanced",
             "text": "An exploration of quantum state vectors, Dirac bra-ket notation, and multi-qubit entanglement. Analyzing superconducting circuits in cryogenic dilution refrigerators."
         },
         "🧠 Deep Learning & GenAI": {
             "title": "Transformer Models & Generative AI",
             "instructor": "Prof. Marcus Thorne",
             "tag": "AI ARCHITECTURES",
+            "audience": "Advanced",
             "text": "Architectural breakdown of self-attention mechanisms, latent diffusion representations, token embeddings, and multi-modal alignment pipelines."
         },
         "🌌 Astrobiology & Exoplanets": {
             "title": "Astrobiology: The Search for Alien Life",
             "instructor": "Dr. Sarah Lin",
             "tag": "SPACE EXPLORATION",
+            "audience": "Undergraduate",
             "text": "Atmospheric spectroscopy of habitable zone exoplanets, organic biosignatures, extremophile biology, and deep celestial nebulae."
         },
         "🏛️ Ancient Civilizations": {
             "title": "Lost Civilizations: The Library of Alexandria",
             "instructor": "Prof. Arthur Pendelton",
             "tag": "WORLD HISTORY",
+            "audience": "Beginner",
             "text": "Exploring the greatest intellectual hub of antiquity, architectural marble wonders, ancient mathematical papyrus scrolls, and celestial astrolabes."
+        },
+        "🔗 Web3 & Cryptography": {
+            "title": "Decentralized Systems & Cryptography",
+            "instructor": "Alex Rivera",
+            "tag": "BLOCKCHAIN TECH",
+            "audience": "Executive",
+            "text": "Zero-knowledge proofs, consensus mechanisms, Byzantine fault tolerance, and smart contract architecture in decentralized state machines."
         }
     }
 
@@ -103,6 +117,7 @@ with st.sidebar:
             st.session_state.lesson_title = data["title"]
             st.session_state.instructor_name = data["instructor"]
             st.session_state.category_tag = data["tag"]
+            st.session_state.audience_level = data.get("audience", "General")
             st.session_state.lesson_text = data["text"]
             st.session_state.extracted_concept = None
             st.session_state.generated_bundle = None
@@ -142,13 +157,16 @@ with col1:
     title_val = st.text_input("Course / Lesson Title", value=st.session_state.lesson_title)
     st.session_state.lesson_title = title_val
 
-    c_inst, c_tag = st.columns(2)
+    c_inst, c_tag, c_aud = st.columns(3)
     with c_inst:
         inst_val = st.text_input("Instructor / Author", value=st.session_state.instructor_name)
         st.session_state.instructor_name = inst_val
     with c_tag:
         tag_val = st.text_input("Category Tag / Badge", value=st.session_state.category_tag)
         st.session_state.category_tag = tag_val
+    with c_aud:
+        aud_val = st.selectbox("Audience Level", ["Beginner", "Undergraduate", "Advanced", "Executive"], index=2)
+        st.session_state.audience_level = aud_val
 
 with col2:
     text_val = st.text_area("Lesson Script / Syllabus / Notes", value=st.session_state.lesson_text, height=125)
@@ -158,7 +176,8 @@ if st.button("✨ Extract Visual Concepts & Themes", type="primary", use_contain
     with st.spinner("Analyzing curriculum and extracting visual metaphors..."):
         concept = extract_concept_with_llm(
             title=st.session_state.lesson_title,
-            text=st.session_state.lesson_text
+            text=st.session_state.lesson_text,
+            audience=st.session_state.audience_level
         )
         st.session_state.extracted_concept = concept
         st.rerun()
@@ -192,7 +211,7 @@ selected_styles = st.multiselect(
 
 c_theme, c_overlay = st.columns(2)
 with c_theme:
-    overlay_theme = st.selectbox("Text Overlay Theme:", ["dark_modern", "clean_minimal", "vibrant_gradient"], index=0)
+    overlay_theme = st.selectbox("Text Overlay Theme:", list(THEME_CONFIGS.keys()), index=0)
 with c_overlay:
     include_overlay = st.checkbox("Embed Dynamic Typography & Branding (Cloudinary Text Layer)", value=True)
 
@@ -201,7 +220,6 @@ if st.button("🚀 Run Cloudinary Generative Pipeline", type="primary", use_cont
         st.error("Please select at least one style variation.")
     else:
         with st.spinner("Generating multi-style asset bundles via Cloudinary AI Pipeline..."):
-            # Prepare prompts
             base_prompt = st.session_state.extracted_concept.visual_metaphor if st.session_state.extracted_concept else st.session_state.lesson_title
             style_prompts = {s: f"{base_prompt}, {STYLE_PROMPT_MODIFIERS[s]}" for s in selected_styles}
 
@@ -222,7 +240,6 @@ if st.session_state.generated_bundle:
     st.divider()
     st.markdown("### 🖼️ Step 3: Multi-Format Educational Asset Studio")
 
-    # Aspect Ratio Selector Tabs
     ar_tabs = st.tabs([
         "🖥️ 16:9 YouTube / LMS Thumbnail",
         "📱 9:16 Mobile Story & Reel",
@@ -237,7 +254,6 @@ if st.session_state.generated_bundle:
         with tab:
             st.markdown(f"**Format Target:** `{ASPECT_RATIOS[ar_key]['label']}` ({ASPECT_RATIOS[ar_key]['width']}x{ASPECT_RATIOS[ar_key]['height']}px, `f_auto,q_auto`)")
             
-            # Show all style variants for this aspect ratio in grid
             cols = st.columns(len(st.session_state.generated_bundle))
             for idx, variant in enumerate(st.session_state.generated_bundle):
                 format_asset = variant.formats.get(ar_key)
@@ -249,6 +265,40 @@ if st.session_state.generated_bundle:
                         with st.expander("🔍 Cloudinary CDN URL & Transformations"):
                             st.code(format_asset.url, language="text")
                             st.markdown(f"**Transformations:** `{format_asset.cloudinary_transformations}`")
+
+    # Step 4: Export Manifest Hub
+    st.divider()
+    st.markdown("### 📦 Step 4: Asset Export Hub")
+    
+    export_manifest = []
+    for variant in st.session_state.generated_bundle:
+        for ar, format_asset in variant.formats.items():
+            export_manifest.append({
+                "style": variant.style_name,
+                "aspect_ratio": ar,
+                "width": format_asset.width,
+                "height": format_asset.height,
+                "url": format_asset.url
+            })
+    
+    c_exp_json, c_exp_list = st.columns([1, 1])
+    with c_exp_json:
+        st.download_button(
+            label="💾 Download Asset Package Manifest (JSON)",
+            data=json.dumps(export_manifest, indent=2),
+            file_name=f"eduvision_{st.session_state.lesson_title.replace(' ', '_').lower()}_manifest.json",
+            mime="application/json",
+            use_container_width=True
+        )
+    with c_exp_list:
+        urls_text = "\n".join([item["url"] for item in export_manifest])
+        st.download_button(
+            label="📋 Download All CDN Delivery URLs (.txt)",
+            data=urls_text,
+            file_name="eduvision_cdn_urls.txt",
+            mime="text/plain",
+            use_container_width=True
+        )
 
     # Cloudinary Track 2 Inspector Panel
     st.divider()
