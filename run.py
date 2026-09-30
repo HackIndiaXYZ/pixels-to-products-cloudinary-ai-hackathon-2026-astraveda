@@ -29,6 +29,7 @@ def main():
     
     # Check if npm is available
     npm_cmd = "npm.cmd" if sys.platform == "win32" else "npm"
+    
     frontend_process = subprocess.Popen(
         [npm_cmd, "run", "dev"],
         cwd=frontend_dir
