@@ -10,10 +10,11 @@ if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
         pass
 
 def main():
-    print("=" * 60)
-    print("[STARTING] EduVision: Ed-Tech Dynamic Asset Engine")
-    print("[TRACK 2] Cloudinary AI Hackathon 2026")
-    print("=" * 60)
+    print("=" * 65)
+    print("[STARTING] EduVision: AI Visual Studio for Education")
+    print("[TECH STACK] Next.js + TypeScript + Tailwind + FastAPI + Cloudinary")
+    print("[TRACK 02] Cloudinary AI Hackathon 2026 (ASTRAVEDA)")
+    print("=" * 65)
 
     # 1. Start FastAPI Backend in background
     print("\n[1/2] Starting FastAPI Backend on http://127.0.0.1:8000 ...")
@@ -22,24 +23,31 @@ def main():
     )
     time.sleep(2)
 
-    # 2. Start Streamlit Studio Frontend
-    print("[2/2] Launching Streamlit Creator Studio on http://localhost:8501 ...")
-    streamlit_process = subprocess.Popen(
-        [sys.executable, "-m", "streamlit", "run", "frontend/app.py", "--server.port", "8501", "--server.headless", "true"]
+    # 2. Start Next.js Studio Frontend
+    print("[2/2] Launching Next.js Creative Studio on http://localhost:3000 ...")
+    frontend_dir = os.path.join(os.path.dirname(__file__), "frontend")
+    
+    # Check if npm is available
+    npm_cmd = "npm.cmd" if sys.platform == "win32" else "npm"
+    frontend_process = subprocess.Popen(
+        [npm_cmd, "run", "dev"],
+        cwd=frontend_dir
     )
 
-    print("\n[SUCCESS] EduVision is live!")
-    print("👉 Frontend Studio UI: http://localhost:8501")
-    print("👉 Backend API Swagger: http://127.0.0.1:8000/docs")
-    print("👉 Backend Root Endpoint: http://127.0.0.1:8000")
+    print("\n" + "=" * 65)
+    print("[SUCCESS] EduVision Studio is Live!")
+    print("👉 Next.js Studio UI:        http://localhost:3000")
+    print("👉 FastAPI Backend Swagger:   http://127.0.0.1:8000/docs")
+    print("👉 FastAPI Health Probe:      http://127.0.0.1:8000/api/health")
+    print("=" * 65)
     print("\nPress Ctrl+C to terminate both servers.")
 
     try:
-        streamlit_process.wait()
+        frontend_process.wait()
     except KeyboardInterrupt:
         print("\nStopping EduVision servers...")
         backend_process.terminate()
-        streamlit_process.terminate()
+        frontend_process.terminate()
         print("Done.")
 
 if __name__ == "__main__":

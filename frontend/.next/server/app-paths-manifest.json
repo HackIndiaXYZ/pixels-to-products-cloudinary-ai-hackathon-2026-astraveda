@@ -1,0 +1,10 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/create/page": "app/create/page.js",
+  "/export/page": "app/export/page.js",
+  "/storyboard/page": "app/storyboard/page.js",
+  "/lab/page": "app/lab/page.js",
+  "/assets/page": "app/assets/page.js",
+  "/studio/page": "app/studio/page.js",
+  "/page": "app/page.js"
+}
