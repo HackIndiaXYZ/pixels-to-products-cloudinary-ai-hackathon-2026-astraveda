@@ -21,6 +21,12 @@ wheels/
 .installed.cfg
 *.egg
 
+# Next.js build
+.next/
+frontend/.next/
+out/
+.vercel/
+
 # Virtual Environment
 venv/
 ENV/
