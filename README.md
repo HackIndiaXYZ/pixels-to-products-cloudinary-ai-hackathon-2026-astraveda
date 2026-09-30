@@ -1,34 +1,48 @@
-# 🎓 EduVision: Ed-Tech Dynamic Asset Engine
+# 🎓 EduVision: AI Visual Studio for Education
 ### 🏆 Cloudinary AI Hackathon 2026 — Track 2: Generative Content Workflows
 **Team ASTRAVEDA** — [hackindia-team:pixels-to-products-cloudinary-ai-hackathon-2026:astraveda]
 
+[![Next.js](https://img.shields.io/badge/Next.js-14.2-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-18-blue?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.4-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Cloudinary](https://img.shields.io/badge/Cloudinary-AI_Generative_Pipeline-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)](https://cloudinary.com/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![Streamlit](https://img.shields.io/badge/Streamlit-Creator_Studio-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 
 ---
 
 ## 📌 Executive Summary & Track 2 Focus
-**EduVision** is an automated generative visual content engine built for course creators, universities, and online educators. It eliminates manual graphic design bottlenecks by transforming raw curriculum text and lesson scripts into complete, multi-format, brand-aligned educational visual asset packages powered by the **Cloudinary AI Media Pipeline**.
+**EduVision** is a production-grade **AI Creative Studio** built for educators, course creators, and EdTech platforms. Inspired by modern SaaS design systems (*Linear × Canva × AI Visual Lab*), EduVision transforms raw educational curriculum scripts and syllabus text into a unified, cinematic visual asset system powered by the **Cloudinary AI Media Pipeline**.
 
 ---
 
 ## 🎯 The Problem
-Creating visual assets for online courses is cumbersome and expensive:
-- Course creators spend hours creating YouTube thumbnails, slide headers, social announcement cards, and mobile course snippets.
+Creating visual assets for digital education is fragmented, time-consuming, and expensive:
+- Educators spend hours manually creating YouTube thumbnails, lecture slides, mobile lesson snippets, and social course cards.
 - Hiring graphic designers for every lecture update is cost-prohibitive.
-- Inconsistent branding and poorly optimized imagery hurt student engagement and slow down site performance.
+- Inconsistent visual themes and unoptimized heavy images hurt student engagement and decrease LMS loading speeds.
 
 ---
 
-## 💡 The EduVision Solution
-1. **Intelligent Curriculum Ingestion:** Educators paste their syllabus or lecture notes.
-2. **Concept & Metaphor Extraction:** The engine extracts core pedagogical themes, visual metaphors, color palettes, and structured generation prompts.
-3. **Multi-Style Generative Generation:** Direct invocation of Cloudinary's AI pipeline producing distinct stylistic variants (*3D Render, Photorealistic, Minimalist Vector, Cyberpunk / Sci-Fi, Chalkboard*).
-4. **Dynamic On-The-Fly Typography & Branding:** Cloudinary text overlays dynamically stamp Course Titles, Instructor Names, and Category Badges with automatic contrast scrims.
-5. **Multi-Format Responsive Cropping:** Auto-converts assets into `16:9` (Web/LMS), `9:16` (Mobile Stories), `1:1` (Cards), and `4:3` (Slides) using Cloudinary smart gravity.
-6. **Optimized Global Delivery:** Delivers assets via Cloudinary CDN using `f_auto,q_auto` for maximum compression and instant load speeds.
+## 💡 The EduVision Solution & Pipeline
+```text
+LESSON TEXT / SYLLABUS
+         ↓
+AI CONCEPT & METAPHOR EXTRACTION
+         ↓
+CLOUDINARY AI GENERATIVE SYNTHESIS (gen_ai)
+         ↓
+MULTI-STYLE GENERATIVE VARIATIONS (3D Scientific, Editorial, Futuristic, Photorealistic)
+         ↓
+CINEMATIC STORYBOARD PLANNING
+         ↓
+DYNAMIC TYPOGRAPHY & BRAND OVERLAYS (l_text)
+         ↓
+RESPONSIVE SMART-GRAVITY CROPPING (16:9, 4:3, 1:1, 9:16)
+         ↓
+GLOBAL CDN OPTIMIZATION (f_auto, q_auto)
+```
 
 ---
 
@@ -36,22 +50,36 @@ Creating visual assets for online courses is cumbersome and expensive:
 
 ```mermaid
 flowchart TD
-    A[Educator Input: Lesson Text / Syllabus] --> B[LLM / Heuristics Extraction Engine]
-    B --> C[Structured Style Prompts]
-    C --> D[Cloudinary Media Pipeline]
+    A["Educator Input: Lesson Text & Syllabus"] --> B["AI Concept Extraction Engine"]
+    B --> C["Structured Visual Prompts & Color Palettes"]
+    C --> D["Cloudinary Generative AI Pipeline"]
     
-    subgraph Cloudinary Workflow [Track 2: Cloudinary AI Pipeline]
-        D --> E1[Generative Style Variations]
-        D --> E2[Dynamic Layered Typography `l_text`]
-        D --> E3[Responsive Smart Auto-Crop `c_fill,g_auto`]
-        D --> E4[Global CDN Delivery `f_auto,q_auto`]
+    subgraph Cloudinary Pipeline [Track 02: Cloudinary AI Media Backbone]
+        D --> E1["Generative Style Variations (gen_ai)"]
+        D --> E2["Dynamic Layered Typography (l_text)"]
+        D --> E3["Responsive Smart Auto-Crop (c_fill, g_auto)"]
+        D --> E4["Global CDN Optimization (f_auto, q_auto)"]
     end
 
-    E1 --> F[EduVision Studio / LMS / Web Endpoints]
+    E1 --> F["EduVision Next.js Creative Studio"]
     E2 --> F
     E3 --> F
     E4 --> F
 ```
+
+---
+
+## 🖥️ EduVision Studio Screens
+
+EduVision features a **Next.js 14 + TypeScript + Tailwind CSS** interface:
+
+1. **✦ Create Lesson (`/create`):** Rich syllabus composer with one-click course presets (*Quantum Computing, Generative AI, Astrobiology, Ancient Civilizations*).
+2. **◇ AI Visual Lab (`/lab`):** Inspect extracted educational metaphors, color palettes, and real-time multi-stage generative pipeline execution.
+3. **◉ Storyboard (`/storyboard`):** Cinematic 4-scene narrative sequence with scene reordering and prompt drawer.
+4. **▧ Asset Studio (`/studio`):** Live dynamic overlay editor with real-time aspect ratio toggling (`16:9`, `4:3`, `1:1`, `9:16`), theme switching, and Cloudinary transformation breakdown.
+5. **📁 Asset Library (`/assets`):** Searchable repository of generated educational visuals with CDN copying and filtering.
+6. **↗ Export Kit (`/export`):** One-click package export with manifest JSON, high-res download bundles, and optimized CDN URLs.
+7. **🛡️ Judge Pipeline Inspector:** Integrated modal showing exact Cloudinary API request payloads and transformation chains for Hackathon evaluation.
 
 ---
 
@@ -60,20 +88,19 @@ flowchart TD
 EduVision is engineered to utilize Cloudinary as the active backbone of media generation, transformation, and delivery:
 
 ### 1. Generative Variations & Style Presets
-EduVision passes prompt modifiers to produce distinct stylistic variants cataloged under `eduvision/generated/`:
-- **3D Render:** `octane render, volumetric lighting, raytraced 8k`
-- **Photorealistic:** `editorial studio photography, 85mm f/1.4, ultra-detailed`
-- **Minimalist Vector:** `flat vector art, modern infographic aesthetic`
-- **Cyberpunk / Sci-Fi:** `neon cyan/magenta glowing accents, dark metallic`
-- **Chalkboard:** `intricate chalk sketch on dark blackboard, architectural`
+EduVision produces distinct stylistic variations simultaneously:
+- **3D Scientific:** `octane render, volumetric lighting, raytraced 8k, academic scientific visualization`
+- **Editorial:** `clean minimalist vector art, academic infographic, editorial illustration`
+- **Futuristic:** `neon cyan and deep blue glowing data crystal network, dark metallic finish`
+- **Photorealistic:** `editorial laboratory photography, 85mm f/1.4 lens, ultra-detailed`
 
 ### 2. Dynamic Text & Branding Overlays (`l_text`)
-On-the-fly rendering of typography directly via Cloudinary transformation URLs without modifying base images:
+Renders layered typography directly via Cloudinary transformation URLs without re-generating base imagery:
 ```text
 https://res.cloudinary.com/{cloud_name}/image/upload/
 c_fill,g_auto,w_1280,h_720/
 e_gradient_fade/
-l_text:Montserrat_24_bold:QUANTUM%20PHYSICS,co_rgb:00F2FE,g_north_west,x_60,y_60/
+l_text:Montserrat_24_bold:QUANTUM%20PHYSICS,co_rgb:00E5FF,g_north_west,x_60,y_60/
 l_text:Montserrat_52_bold:Quantum%20Computing%20101,co_rgb:FFFFFF,g_south_west,x_60,y_140,w_900,c_fit/
 l_text:Roboto_22_bold:INSTRUCTOR:%20DR.%20ELENA%20VANCE,co_rgb:94A3B8,g_south_west,x_60,y_80/
 f_auto,q_auto/
@@ -95,51 +122,82 @@ Every generated asset is served with `f_auto` (automatic AVIF/WebP negotiation) 
 ## ⚡ Quickstart Guide
 
 ### Prerequisites
-- Python 3.10+
-- (Optional) Cloudinary Account credentials (`cloud_name`, `api_key`, `api_secret`)
+- **Python:** 3.10 or higher
+- **Node.js:** 18.x or higher (`npm` included)
+- *(Optional)* Cloudinary Account credentials (`cloud_name`, `api_key`, `api_secret`)
 
-### 1. Clone & Setup
+---
+
+### Option A: 1-Click Launch (Recommended)
+
+1. **Install dependencies:**
 ```bash
-git clone https://github.com/HackIndiaXYZ/pixels-to-products-cloudinary-ai-hackathon-2026-astraveda.git
-cd pixels-to-products-cloudinary-ai-hackathon-2026-astraveda
+# Python Backend Dependencies
 pip install -r requirements.txt
+
+# Next.js Frontend Dependencies
+cd frontend
+npm install
+cd ..
 ```
 
-### 2. Configure Environment Variables
-Copy `.env.example` to `.env` and fill in your Cloudinary credentials:
+2. **Launch Full Stack:**
+```bash
+python run.py
+```
+*(Or double click `start.bat` on Windows)*
+
+---
+
+### Option B: Separate Terminal Launch
+
+**Terminal 1 (FastAPI Backend):**
+```bash
+uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+**Terminal 2 (Next.js Creative Studio):**
+```bash
+cd frontend
+npm run dev
+```
+
+---
+
+### 🌐 Access Points
+
+| Service | URL | Description |
+| :--- | :--- | :--- |
+| **Next.js Creative Studio** | [http://localhost:3000](http://localhost:3000) | Main Creative Studio UI |
+| **Alternative Frontend Host** | [http://127.0.0.1:3000](http://127.0.0.1:3000) | Direct IPv4 Loopback |
+| **FastAPI Swagger API Docs** | [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) | Interactive REST API Docs |
+| **Backend Health Check** | [http://127.0.0.1:8000/api/health](http://127.0.0.1:8000/api/health) | Pipeline Health & Cloudinary Status |
+
+---
+
+## 🔑 Environment Configuration
+
+Create a `.env` file in the root directory:
 ```env
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 GEMINI_API_KEY=your_gemini_api_key  # Optional: Fallback heuristics active by default
 ```
-*(Note: If no credentials are provided, EduVision automatically runs in high-fidelity demo mode so judges can test instantly without setup barriers).*
 
-### 3. Run EduVision
-Launch both the FastAPI backend and Streamlit Creator Studio with a single command:
-
-**Windows:**
-```bash
-start.bat
-# or
-python run.py
-```
-
-**Linux / macOS:**
-```bash
-python run.py
-```
-
-- **Creator Studio UI:** [http://localhost:8501](http://localhost:8501)
-- **FastAPI Interactive Docs:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+> **Note on Demo Mode:** If no Cloudinary API credentials are configured, EduVision automatically runs in **High-Fidelity Demo Mode** with pre-configured Cloudinary sample assets and simulated AI workflows, allowing judges to test 100% of the UI without configuration barriers.
 
 ---
 
 ## 🧪 Running Automated Tests
+
+Run the complete test suite verifying all 10 API endpoints, schema models, Cloudinary URL builders, and dynamic overlay generators:
+
 ```bash
 python tests/run_all_tests.py
 ```
 
+*Expected Result: 22/22 tests passing (100% pass rate).*
 
 ---
 
