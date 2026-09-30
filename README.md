@@ -140,18 +140,6 @@ python run.py
 python tests/run_all_tests.py
 ```
 
----
-
-## 🎬 2–4 Minute Hackathon Demo Video Script
-
-| Time | Segment | What to Show |
-|---|---|---|
-| **0:00 - 0:30** | **The Hook & Problem** | Intro to Team ASTRAVEDA and EduVision. Highlight the time course creators waste designing thumbnails and course visuals. |
-| **0:30 - 1:00** | **Concept Extraction** | Click a preset (*e.g., Quantum Computing*). Show how EduVision extracts visual metaphors, color palettes, and structured prompts. |
-| **1:00 - 2:00** | **Cloudinary AI Pipeline in Action** | Trigger generation. Showcase the 4 distinct style variations (*3D Render, Photorealistic, Vector, Cyberpunk*). |
-| **2:00 - 2:45** | **Dynamic Overlays & Multi-Format Studio** | Switch between 16:9, 9:16, 1:1, and 4:3 tabs. Highlight Cloudinary dynamic text overlays and `f_auto,q_auto` optimization. |
-| **2:45 - 3:15** | **Cloudinary Inspector & URL Breakdown** | Open the inspector panel. Show the exact Cloudinary transformation string in real-time. |
-| **3:15 - 3:30** | **Conclusion & Impact** | Wrap up on how EduVision democratizes high-production educational media worldwide. |
 
 ---
 
